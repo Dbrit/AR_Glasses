@@ -1,0 +1,13 @@
+.\lab3.o: Lab3.c
+.\lab3.o: Lab3.h
+.\lab3.o: S:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\lab3.o: ../inc/PLL.h
+.\lab3.o: ../inc/tm4c123gh6pm.h
+.\lab3.o: ../inc/LaunchPad.h
+.\lab3.o: ../inc/CortexM.h
+.\lab3.o: Buttons.h
+.\lab3.o: Speaker.h
+.\lab3.o: ../inc/CortexM.h
+.\lab3.o: Clock.h
+.\lab3.o: ST7735.h
+.\lab3.o: ../inc/CortexM.h
