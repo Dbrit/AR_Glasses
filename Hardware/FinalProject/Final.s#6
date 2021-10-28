@@ -402,6 +402,12 @@ Metric Code Size 3216</description>
 <wire x1="-0.508" y1="3.048" x2="6.604" y2="3.048" width="0.127" layer="21"/>
 <wire x1="6.604" y1="3.048" x2="6.604" y2="-0.508" width="0.127" layer="21"/>
 <wire x1="6.604" y1="-0.508" x2="-0.508" y2="-0.508" width="0.127" layer="21"/>
+<polygon width="0.127" layer="42">
+<vertex x="-0.508" y="3.048"/>
+<vertex x="6.604" y="3.048"/>
+<vertex x="6.604" y="-0.508"/>
+<vertex x="-0.508" y="-0.508"/>
+</polygon>
 </package>
 <package name="1X05">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
@@ -3048,6 +3054,8 @@ measure current</text>
 <wire x1="144.78" y1="358.14" x2="144.78" y2="365.76" width="0.1524" layer="91"/>
 <pinref part="SLEEP" gate="G$1" pin="2"/>
 <wire x1="144.78" y1="365.76" x2="147.32" y2="365.76" width="0.1524" layer="91"/>
+<junction x="121.92" y="358.14"/>
+<junction x="129.54" y="358.14"/>
 </segment>
 </net>
 <net name="+3V3" class="0">
@@ -3799,29 +3807,42 @@ measure current</text>
 </sheet>
 </sheets>
 <errors>
+<approved hash="106,1,368.3,337.82,AIN_1,,,,,"/>
+<approved hash="106,1,749.3,368.3,AUX_CL,,,,,"/>
+<approved hash="106,1,749.3,363.22,AUX_DA,,,,,"/>
 <approved hash="106,1,368.3,165.1,I2C0_SCK,,,,,"/>
+<approved hash="106,1,368.3,167.64,I2C0_SDA,,,,,"/>
+<approved hash="106,1,749.3,353.06,N$16,,,,,"/>
 <approved hash="106,1,358.14,91.44,PA0,,,,,"/>
+<approved hash="106,1,368.3,170.18,PB4,,,,,"/>
 <approved hash="106,1,368.3,172.72,PB5,,,,,"/>
 <approved hash="106,1,368.3,177.8,PB7,,,,,"/>
+<approved hash="106,1,139.7,317.5,PD5,,,,,"/>
+<approved hash="106,1,139.7,320.04,PD6,,,,,"/>
+<approved hash="106,1,139.7,322.58,PD7,,,,,"/>
 <approved hash="106,1,368.3,340.36,PE3,,,,,"/>
-<approved hash="113,1,76.4371,339.286,JP1,,,,,"/>
+<approved hash="106,1,58.42,396.24,PF0,,,,,"/>
+<approved hash="106,1,58.42,398.78,PF1,,,,,"/>
+<approved hash="106,1,58.42,401.32,PF2,,,,,"/>
+<approved hash="106,1,58.42,403.86,PF3,,,,,"/>
+<approved hash="106,1,58.42,406.4,PF4,,,,,"/>
+<approved hash="106,1,368.3,175.26,PWM0,,,,,"/>
+<approved hash="113,1,76.4371,339.316,JP1,,,,,"/>
 <approved hash="113,1,139.596,107.846,FRAME1,,,,,"/>
 <approved hash="113,1,429.156,107.846,FRAME2,,,,,"/>
-<approved hash="113,1,77.1604,191.526,JP2,,,,,"/>
+<approved hash="113,1,77.1299,191.526,JP2,,,,,"/>
 <approved hash="113,1,429.156,333.906,FRAME3,,,,,"/>
 <approved hash="113,1,139.596,331.366,FRAME4,,,,,"/>
-<approved hash="113,1,127.295,363.22,MODE,,,,,"/>
-<approved hash="113,1,142.535,363.22,SLEEP,,,,,"/>
 <approved hash="113,1,226.355,101.6,RESET,,,,,"/>
-<approved hash="113,1,76.4371,364.686,DHT11,,,,,"/>
+<approved hash="113,1,76.4371,364.716,DHT11,,,,,"/>
 <approved hash="113,1,716.176,333.906,FRAME5,,,,,"/>
-<approved hash="113,1,112.055,363.22,MISC,,,,,"/>
-<approved hash="113,1,201.888,381.196,PC_JP,,,,,"/>
-<approved hash="113,1,196.808,308.806,SSI1_JP,,,,,"/>
-<approved hash="113,1,534.628,174.186,LCD_JP,,,,,"/>
-<approved hash="113,1,777.477,409.136,JP3,,,,,"/>
-<approved hash="113,1,804.943,406.204,JP4,,,,,"/>
+<approved hash="113,1,201.888,381.226,PC_JP,,,,,"/>
+<approved hash="113,1,196.808,308.836,SSI1_JP,,,,,"/>
 <approved hash="113,1,157.802,166.37,LED,,,,,"/>
+<approved hash="113,1,731.52,361.658,IMU,,,,,"/>
+<approved hash="113,1,117.077,368.526,MISC,,,,,"/>
+<approved hash="113,1,132.317,368.526,MODE,,,,,"/>
+<approved hash="113,1,147.611,368.526,SLEEP,,,,,"/>
 </errors>
 </schematic>
 </drawing>
