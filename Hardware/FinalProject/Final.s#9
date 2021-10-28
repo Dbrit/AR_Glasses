@@ -402,6 +402,12 @@ Metric Code Size 3216</description>
 <wire x1="-0.508" y1="3.048" x2="6.604" y2="3.048" width="0.127" layer="21"/>
 <wire x1="6.604" y1="3.048" x2="6.604" y2="-0.508" width="0.127" layer="21"/>
 <wire x1="6.604" y1="-0.508" x2="-0.508" y2="-0.508" width="0.127" layer="21"/>
+<polygon width="0.127" layer="42">
+<vertex x="-0.508" y="3.048"/>
+<vertex x="6.604" y="3.048"/>
+<vertex x="6.604" y="-0.508"/>
+<vertex x="-0.508" y="-0.508"/>
+</polygon>
 </package>
 <package name="1X05">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
@@ -3821,8 +3827,6 @@ measure current</text>
 <approved hash="106,1,58.42,403.86,PF3,,,,,"/>
 <approved hash="106,1,58.42,406.4,PF4,,,,,"/>
 <approved hash="106,1,368.3,175.26,PWM0,,,,,"/>
-<approved hash="108,1,121.92,358.14,GND,,,,,"/>
-<approved hash="108,1,129.54,358.14,GND,,,,,"/>
 <approved hash="113,1,76.4371,339.316,JP1,,,,,"/>
 <approved hash="113,1,139.596,107.846,FRAME1,,,,,"/>
 <approved hash="113,1,429.156,107.846,FRAME2,,,,,"/>
