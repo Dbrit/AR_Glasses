@@ -33,10 +33,14 @@
 //#define BLYNK_AUTH_TOKEN "xDcDSlQsaqYRl6vAX9Ho3lvoX5DZhepZ";
 
 // the following two lines connect you to the internet
-char    ssid[32]        = "AndroidAPd9db";
-char    pass[32]        = "hlsi1664";
+char    ssid[32]        = "KCKPhone";
+char    pass[32]        = "epejt4hch6b9x";
 // create your own Blynk server app and edit this next line with your authentication code
 char    auth[64]        = "Hcp8OImKkhj2Om-jLN3yMRHboODFhf82";
+char		AT_CWJAP_str[]  = "AT+CWJAP=\"AndroidAPd9db\",\"hlsi1664\"";
+char		AT_CIPSTART_str_weather[] = "AT+CIPSTART=\"TCP\",\"api.openweathermap.org\",80";
+char 		AT_CIPSEND_str_weather[] = "AT+CIPSEND=81";
+char 		AT_GET_str_weather[]	= "GET /data/2.5/find?q=Austin&appid=b2528e5a76bf3165f442841e4a0d98c1&units=imperial";
 
 #define UART_FR_RXFF            0x00000040  // UART Receive FIFO Full
 #define UART_FR_TXFF            0x00000020  // UART Transmit FIFO Full
@@ -73,7 +77,7 @@ void WaitForInterrupt(void);  // low power mode
 // Two-index implementation of the receive FIFO
 // can hold 0 to RX5FIFOSIZE messages
 #define RX5FIFOSIZE 8    // must be a power of 2
-#define MESSAGESIZE 64
+#define MESSAGESIZE 2048
 uint32_t volatile Rx5PutI; // put next message
 uint32_t volatile Rx5PutJ; // put next character 0 to MESSAGESIZE-1
 uint32_t volatile Rx5GetI; // get next message
@@ -435,4 +439,135 @@ void ESP8266_SetupWiFi(void) {
   PE3 = BIT3;
 }
 
+// ----------------------------------------------------------------------
+// This routine sets up the Wifi connection between the TM4C and the
+// hotspot. Enable the DEBUG flags in esp8266.h if you want to watch the transactions.
+//
+//
+// THIS SETUP IS FOR TESTING WITH AT COMMANDS. THE FOLLOWING FUNCTIONS ARE TEST FUNCTIONS TO EXECUTE THE
+// AT COMMANDS TO GET AN API CALL TO OPENWEATHER. AS OF 11/1/2021 THEY ARE NOT FUNCTIONING AS INTENDED;
+// MORE RESEARCH NEEDS TO BE DONE
+// To call the API, follow these commands:
+//
+//	AT+CWJAP="ssid","password"
+//	AT+CIFSR (optional to check IP and MAC) (register MAC w/ utexas-iot)
+//	AT+CIPSTART="TCP","api website name", 80
+//	AT+CIPSEND=##bytes
+//	GET "endpoint info"
+//	
+//	ESP should at this point output the GET data. Need to read and parse for desired info
+//
+void ESP8266_SetupWiFi2(void) { 
+#ifdef DEBUG1
+  UART_OutString("\r\nIn WiFI_Setup routine\r\n");
+  UART_OutString("Waiting for RDY flag from ESP\r\n");
+#endif
+  
+#ifdef DEBUG3
+  Output_Color(ST7735_YELLOW);
+  ST7735_OutString("In WiFI_Setup routine\n");
+  ST7735_OutString("Waiting for RDY flag\n");
+#endif 
+  while (!RDY) {      // Wait for ESP8266 indicate it is ready for programming data
+#ifdef DEBUG1
+    UART_OutString(".");
+#endif
+    DelayMs(1000);
+  }
+  ESP8266_OutString(AT_CWJAP_str);
 
+#ifdef DEBUG1
+  UART_OutString(ssid);
+  UART_OutChar(',');
+  UART_OutString(pass);
+  UART_OutString(",\n\r");            
+#endif
+#ifdef DEBUG3
+  Output_Color(ST7735_WHITE);
+  ST7735_OutString(ssid); ST7735_OutChar('\n');
+  ST7735_OutString(pass); ST7735_OutChar('\n');
+  ST7735_OutString(auth); ST7735_OutChar('\n');
+#endif
+
+  //
+  // This while loop receives debug info from the 8266 and optionally 
+  // sends it out the debug port. The loop exits once the RDY signal
+  // is deasserted and the serial port has no more character to xmit
+  // 
+#ifdef DEBUG1
+  UART_OutString("\n\rWaiting for RDY to go low\n\r");
+#endif 
+  while(RDY){   // pause while RDY=1
+#ifdef DEBUG1
+    UART_OutString(".");
+#endif
+    DelayMs(500);
+  }
+  while(ESP8266_GetMessage(RxMessage)){
+  }
+#ifdef DEBUG1
+  UART_OutString("\n\rRDY went low\n\r");
+#endif 
+  Rx5Fifo_Init(); // flush buffer
+
+#ifdef DEBUG3
+  Output_Color(ST7735_YELLOW);
+  ST7735_OutString("Exiting WiFI_Setup\nReady to talk\n");
+#endif     
+#ifdef DEBUG1
+  UART_OutString("Exiting TM4C WiFI_Setup routine\r\nReady to talk\r\n");
+#endif
+  PE3 = BIT3;
+}
+
+void ESP8266_AT_CIPSTART_Weather(void)
+{
+	#ifdef DEBUG1
+	UART_OutString(AT_CIPSTART_str_weather);
+	#endif 
+	
+  Rx5Fifo_Init(); // flush buffer
+	
+	ESP8266_OutString(AT_CIPSTART_str_weather);
+	
+	while(ESP8266_GetMessage(RxMessage)){
+  }
+	#ifdef DEBUG1
+	UART_OutString(RxMessage);
+	#endif 
+	
+	Rx5Fifo_Init(); // flush buffer
+}
+
+void ESP8266_AT_CIPSEND_Weather(void)
+{
+	#ifdef DEBUG1
+  UART_OutString(AT_CIPSEND_str_weather);
+	UART_OutString(RxMessage);
+	#endif 
+	
+	ESP8266_OutString(AT_CIPSEND_str_weather);
+	while(ESP8266_GetMessage(RxMessage)){
+  }
+	#ifdef DEBUG1
+	UART_OutString(RxMessage);
+	#endif 
+	
+	Rx5Fifo_Init(); // flush buffer
+}
+
+void ESP8266_AT_GET_Weather(void)
+{
+	#ifdef DEBUG1
+	UART_OutString(AT_GET_str_weather);
+	#endif 
+	
+	ESP8266_OutString(AT_GET_str_weather);
+		while(ESP8266_GetMessage(RxMessage)){
+  }
+	#ifdef DEBUG1
+	UART_OutString(RxMessage);
+	#endif 
+}
+
+//To do: create a function that parses the get request message for desired data
