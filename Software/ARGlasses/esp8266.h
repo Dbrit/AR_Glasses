@@ -15,7 +15,7 @@
 #define _ESP8266H_
 #include <stdint.h>
 // comment out either/both to remove debugging
-#define DEBUG1                // UART0 Debug output
+//#define DEBUG1                // UART0 Debug output
 // #define DEBUG3                // ST7735 Debug output
 
 // Initialize PE5,4,3,1,0 for interface to ESP8266
@@ -29,7 +29,6 @@ void ESP8266_Reset(void);
 // This routine sets up the Wifi connection between the TM4C and the
 // hotspot. Enable the DEBUG flags if you want to watch the transactions.
 void ESP8266_SetupWiFi(void);
-
 
 
 // remove a message from front of index FIFO
@@ -58,6 +57,14 @@ void ESP8266_OutString(char *pt);
 // Output: none
 // Variable format 1-10 digits with no space before or after
 void ESP8266_OutUDec(uint32_t n);
+
+
+
+void ESP8266_SetupWiFi2(void);
+void ESP8266_AT_CIPSTART_Weather(void);
+void ESP8266_AT_CIPSEND_Weather(void);
+void ESP8266_AT_GET_Weather(void);
+	
 
 #endif
   

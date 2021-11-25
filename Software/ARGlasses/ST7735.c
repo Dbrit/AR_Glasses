@@ -120,6 +120,8 @@
 // Requires (11 + size*size*6*8) bytes of transmission for each character
 uint32_t StX=0; // position along the horizonal axis 0 to 20
 uint32_t StY=0; // position along the vertical axis 0 to 15
+uint32_t StX2=0; // position along the horizonal axis 0 to 20
+uint32_t StY2=0; // position along the vertical axis 0 to 15
 uint16_t StTextColor = ST7735_YELLOW;
 uint16_t BgTextColor = ST7735_BLACK;
 
@@ -535,7 +537,7 @@ static int16_t _height = ST7735_TFTHEIGHT;
 void static writecommand(uint8_t c) {
                                         // wait until SSI0 not busy/transmit FIFO empty
   while((SSI0_SR_R&SSI_SR_BSY)==SSI_SR_BSY){};
-  TFT_CS = TFT_CS_LOW;
+  //TFT_CS = TFT_CS_LOW;
   DC = DC_COMMAND;
   SSI0_DR_R = c;                        // data out
                                         // wait until SSI0 not busy/transmit FIFO empty
@@ -552,7 +554,7 @@ void static writedata(uint8_t c) {
 void static deselect(void) {
                                         // wait until SSI0 not busy/transmit FIFO empty
   while((SSI0_SR_R&SSI_SR_BSY)==SSI_SR_BSY){};
-  TFT_CS = TFT_CS_HIGH;    
+  //TFT_CS = TFT_CS_HIGH;    
 }
 
 // Subroutine to wait 1 msec
@@ -870,7 +872,8 @@ void static pushColor(uint16_t color) {
 //        color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
 void ST7735_DrawPixel(int16_t x, int16_t y, uint16_t color) {
-
+	x = _width - x - 1; // mirror all images
+	
   if((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) return;
 
 //  setAddrWindow(x,y,x+1,y+1); // original code, bug???
@@ -940,6 +943,8 @@ void ST7735_DrawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
 // Input: color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
 void ST7735_FillScreen(uint16_t color) {
+	PA3 = 0x0;
+	PB4 = 0x0;
   ST7735_FillRect(0, 0, _width, _height, color);  // original
 //  screen is actually 129 by 161 pixels, x 0 to 128, y goes from 0 to 160
 }
@@ -1080,7 +1085,65 @@ uint16_t ST7735_SwapColor(uint16_t x) {
 // Output: none
 // Must be less than or equal to 128 pixels wide by 160 pixels high
 void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, int16_t h){
+	//left LCD
+	PA3 = 0x8;
+	PB4 = 0x0;
+	ST7735_DrawBitmapRightAligned(x - ROFFSET, y, image, w, h);
+	
+	//right LCD
+	PA3 = 0x0;
+	PB4 = 0x10;
   int16_t skipC = 0;                      // non-zero if columns need to be skipped due to clipping
+  int16_t originalWidth = w;              // save this value; even if not all columns fit on the screen, the image is still this width in ROM
+  int i = w*(h - 1);
+
+  if((x >= _width) || ((y - h + 1) >= _height) || ((x + w) <= 0) || (y < 0)){
+    return;                             // image is totally off the screen, do nothing
+  }
+  if((w > _width) || (h > _height)){    // image is too wide for the screen, do nothing
+    //***This isn't necessarily a fatal error, but it makes the
+    //following logic much more complicated, since you can have
+    //an image that exceeds multiple boundaries and needs to be
+    //clipped on more than one side.
+    return;
+  }
+  if((x + w - 1) >= _width){            // image exceeds right of screen
+    skipC = (x + w) - _width;           // skip cut off columns
+    w = _width - x;
+  }
+  if((y - h + 1) < 0){                  // image exceeds top of screen
+    i = i - (h - y - 1)*originalWidth;  // skip the last cut off rows
+    h = y + 1;
+  }
+  if(x < 0){                            // image exceeds left of screen
+    w = w + x;
+    skipC = -1*x;                       // skip cut off columns
+    i = i - x;                          // skip the first cut off columns
+    x = 0;
+  }
+  if(y >= _height){                     // image exceeds bottom of screen
+    h = h - (y - _height + 1);
+    y = _height - 1;
+  }
+
+  setAddrWindow(x, y-h+1, x+w-1, y);
+
+  for(y=0; y<h; y=y+1){
+    for(x=0; x<w; x=x+1){
+                                        // send the top 8 bits
+      writedata((uint8_t)(image[i] >> 8));
+                                        // send the bottom 8 bits
+      writedata((uint8_t)image[i]);
+      i = i + 1;                        // go to the next pixel
+    }
+    i = i + skipC;
+    i = i - 2*originalWidth;
+  }
+
+  deselect();
+}
+void ST7735_DrawBitmapRightAligned(int16_t x, int16_t y, const uint16_t *image, int16_t w, int16_t h) {
+	int16_t skipC = 0;                      // non-zero if columns need to be skipped due to clipping
   int16_t originalWidth = w;              // save this value; even if not all columns fit on the screen, the image is still this width in ROM
   int i = w*(h - 1);
 
@@ -1194,7 +1257,55 @@ void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t b
 //        size      number of pixels per character pixel (e.g. size==2 prints each pixel of font as 2x2 square)
 // Output: none
 void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size){
+	//left LCD
+	PA3 = 0x8;
+	PB4 = 0x0;
+	ST7735_DrawCharRightAligned(x-ROFFSET, y, c, textColor, bgColor, size);
+	
+	//right LCD
+	PA3 = 0x0;
+	PB4 = 0x10;
   uint8_t line; // horizontal row of pixels of character
+  int32_t col, row, i, j;// loop indices
+  if(((x + 6*size - 1) >= _width)  || // Clip right
+     ((y + 8*size - 1) >= _height) || // Clip bottom
+     ((x + 6*size - 1) < 0)        || // Clip left
+     ((y + 8*size - 1) < 0)){         // Clip top
+    return;
+  }
+
+  setAddrWindow(x, y, x+6*size-1, y+8*size-1);
+
+  line = 0x01;        // print the top row first
+  // print the rows, starting at the top
+  for(row=0; row<8; row=row+1){
+    for(i=0; i<size; i=i+1){
+      // print the columns, starting on the left
+      for(col=0; col<5; col=col+1){
+        if(Font[(c*5)+col]&line){
+          // bit is set in Font, print pixel(s) in text color
+          for(j=0; j<size; j=j+1){
+            pushColor(textColor);
+          }
+        } else{
+          // bit is cleared in Font, print pixel(s) in background color
+          for(j=0; j<size; j=j+1){
+            pushColor(bgColor);
+          }
+        }
+      }
+      // print blank column(s) to the right of character
+      for(j=0; j<size; j=j+1){
+        pushColor(bgColor);
+      }
+    }
+    line = line<<1;   // move up to the next row
+  }
+
+  deselect();
+}
+void ST7735_DrawCharRightAligned(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size) {
+	uint8_t line; // horizontal row of pixels of character
   int32_t col, row, i, j;// loop indices
   if(((x + 6*size - 1) >= _width)  || // Clip right
      ((y + 8*size - 1) >= _height) || // Clip bottom
@@ -1248,6 +1359,18 @@ uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor){
   if(y>15) return 0;
   while(*pt){
     ST7735_DrawCharS(x*6, y*10, *pt, textColor, ST7735_BLACK, 1);
+    pt++;
+    x = x+1;
+    if(x>20) return count;  // number of characters printed
+    count++;
+  }
+  return count;  // number of characters printed
+}
+uint32_t ST7735_DrawStringRightAligned(uint16_t x, uint16_t y, char *pt, int16_t textColor){
+	uint32_t count = 0;
+  if(y>15) return 0;
+  while(*pt){
+    ST7735_DrawCharS(x*6+ROFFSET, y*10, *pt, textColor, ST7735_BLACK, 1);
     pt++;
     x = x+1;
     if(x>20) return count;  // number of characters printed
@@ -1367,6 +1490,8 @@ void ST7735_SetCursor(uint32_t newX, uint32_t newY){
   }
   StX = newX;
   StY = newY;
+	StX2 = newX;
+	StY2 = newY;
 }
 //-----------------------ST7735_OutUDec-----------------------
 // Output a 32-bit number in unsigned decimal format
@@ -1376,6 +1501,14 @@ void ST7735_SetCursor(uint32_t newX, uint32_t newY){
 // Output: none
 // Variable format 1-10 digits with no space before or after
 void ST7735_OutUDec(uint32_t n){
+	//left LCD
+	PA3 = 0x8;
+	PB4 = 0x0;
+	ST7735_OutUDecRightAligned(n);
+	
+	//right LCD
+	PA3 = 0x0;
+	PB4 = 0x10;
   Messageindex = 0;
   fillmessage(n);
   Message[Messageindex] = 0; // terminate
@@ -1387,6 +1520,19 @@ void ST7735_OutUDec(uint32_t n){
   }
 }
 
+void ST7735_OutUDecRightAligned(uint32_t n){
+  Messageindex = 0;
+  fillmessage(n);
+  Message[Messageindex] = 0; // terminate
+  ST7735_DrawStringRightAligned(StX2,StY2,Message,StTextColor);
+  StX2 = StX2+Messageindex;
+  if(StX2>20){
+    StX2 = 20;
+    ST7735_DrawCharS(StX2*6+ROFFSET,StY2*10,'*',ST7735_RED,ST7735_BLACK, 1);
+  }
+	
+}
+
 //-----------------------ST7735_OutUDec2-----------------------
 // Output a 32-bit number in unsigned 2-digit decimal format
 // Position determined by ST7735_SetCursor command
@@ -1395,14 +1541,34 @@ void ST7735_OutUDec(uint32_t n){
 // Output: none
 // Fixed format 2 digits with no space before or after
 void ST7735_OutUDec2(uint32_t n){
+	//left LCD
+	PA3 = 0x8;
+	PB4 = 0x0;
+	ST7735_OutUDec2RightAligned(n);
+	
+	//right LCD
+	PA3 = 0x0;
+	PB4 = 0x10;
   Messageindex = 0;
   fillmessage2(n);
   Message[Messageindex] = 0; // terminate
-  ST7735_DrawStringBG(StX,StY,Message,StTextColor,BgTextColor);
+  ST7735_DrawString(StX,StY,Message,StTextColor);
   StX = StX+Messageindex;
   if(StX>20){
     StX = 20;
     ST7735_DrawCharS(StX*6,StY*10,'*',ST7735_RED,BgTextColor, 1);
+  }
+}
+
+void ST7735_OutUDec2RightAligned(uint32_t n){
+  Messageindex = 0;
+  fillmessage2(n);
+  Message[Messageindex] = 0; // terminate
+  ST7735_DrawStringRightAligned(StX2,StY2,Message,StTextColor);
+  StX2 = StX2+Messageindex;
+  if(StX2>20){
+    StX2 = 20;
+    ST7735_DrawCharS(StX2*6+ROFFSET,StY2*10,'*',ST7735_RED,BgTextColor, 1);
   }
 }
 
@@ -1783,12 +1949,49 @@ void ST7735_OutChar(char ch){
   }
   ST7735_DrawCharS(StX*6,StY*10,ch,StTextColor,BgTextColor, 1);
   StX++;
-  if(StX>20){
-    StX = 20;
+  if(StX>25){
+    StX = 25;
     ST7735_DrawCharS(StX*6,StY*10,'*',ST7735_RED,BgTextColor, 1);
   }
   return;
 }
+
+// *************** ST7735_OutCharRightAligned ********************
+// Output one character to the LCD
+// Position determined by ST7735_SetCursor command
+// Color set by ST7735_SetTextColor
+// Inputs: 8-bit ASCII character
+// Outputs: none
+void ST7735_OutCharRightAligned(char ch){
+  if((ch == 10) || (ch == 13) || (ch == 27)){
+    StY2++; StX2=0;
+    if(StY2>15){
+      StY2 = 0;
+    }
+    ST7735_DrawStringBG(0,StY2,"                     ",StTextColor, BgTextColor);
+    return;
+  }
+  ST7735_DrawCharS(StX2*6 + ROFFSET,StY2*10,ch,StTextColor,BgTextColor, 1);
+  StX2++;
+  if(StX2>25){
+    StX2 = 25;
+    ST7735_DrawCharS(StX2*6 + ROFFSET,StY2*10,'*',ST7735_RED,BgTextColor, 1);
+  }
+  return;
+}
+
+void ST7735_OutChar3D(char ch) {
+	//left LCD
+	PA3 = 0x8;
+	PB4 = 0x0;
+	ST7735_OutCharRightAligned(ch);
+	
+	//right LCD
+	PA3 = 0x0;
+	PB4 = 0x10;
+	ST7735_OutChar(ch);
+}
+
 //********ST7735_OutString*****************
 // Print a string of characters to the ST7735 LCD.
 // Position determined by ST7735_SetCursor command
@@ -1797,11 +2000,34 @@ void ST7735_OutChar(char ch){
 // inputs: ptr  pointer to NULL-terminated ASCII string
 // outputs: none
 void ST7735_OutString(char *ptr){
+	//left LCD
+	PA3 = 0x8;
+	PB4 = 0x0;
+	ST7735_OutStringRightAligned(ptr);
+	
+	//right LCD
+	PA3 = 0x0;
+	PB4 = 0x10;
   while(*ptr){
     ST7735_OutChar(*ptr);
     ptr = ptr + 1;
   }
 }
+
+//********ST7735_OutStringRightAligned*****************
+// Print a string of characters to the ST7735 LCD.
+// Position determined by ST7735_SetCursor command
+// Color set by ST7735_SetTextColor
+// The string will not automatically wrap.
+// inputs: ptr  pointer to NULL-terminated ASCII string
+// outputs: none
+void ST7735_OutStringRightAligned(char *ptr){
+  while(*ptr){
+    ST7735_OutCharRightAligned(*ptr);
+    ptr = ptr + 1;
+  }
+}
+
 // ************** ST7735_SetTextColor ************************
 // Sets the color in which the characters will be printed
 // Background color is fixed at black
@@ -1868,7 +2094,16 @@ void Output_Color(uint32_t newColor){ // Set color of future output
   ST7735_SetTextColor(newColor);
 }
 
-
+/****************ST7735_OutSDec16***************
+ Inputs:  signed 16-bit integer
+ Outputs: none
+ */ 
+void ST7735_OutSDec16(int16_t n) {
+	if (n < 0) {
+		ST7735_OutString("-");
+	}
+	ST7735_OutUDec(0x7F&n);
+}
 
 /****************ST7735_sDecOut2***************
  converts fixed point number to LCD

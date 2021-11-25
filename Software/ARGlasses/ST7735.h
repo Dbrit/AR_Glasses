@@ -134,6 +134,14 @@ enum initRFlags{
 #define ST7735_YELLOW  0x07FF
 #define ST7735_WHITE   0xFFFF
 
+// Chip Select Pins
+#define PA3       (*((volatile uint32_t *)0x40004020))
+#define PB4       (*((volatile uint32_t *)0x40005040))  
+
+// 3D effect
+#define ROFFSET 30 //32
+
+
 //------------ST7735_InitB------------
 // Initialization for ST7735B screens.
 // Input: none
@@ -259,6 +267,7 @@ uint16_t ST7735_SwapColor(uint16_t x) ;
 // Output: none
 // Must be less than or equal to 128 pixels wide by 160 pixels high
 void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, int16_t h);
+void ST7735_DrawBitmapRightAligned(int16_t x, int16_t y, const uint16_t *image, int16_t w, int16_t h);
 
 //------------ST7735_DrawCharS------------
 // Simple character draw function.  This is the same function from
@@ -291,6 +300,7 @@ void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t b
 //        size      number of pixels per character pixel (e.g. size==2 prints each pixel of font as 2x2 square)
 // Output: none
 void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
+void ST7735_DrawCharRightAligned(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 
 //------------ST7735_DrawString------------
 // String draw function.
@@ -302,8 +312,8 @@ void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bg
 //        textColor 16-bit color of the characters
 // bgColor is Black and size is 1
 // Output: number of characters printed
-uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor);;
-
+uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor);
+uint32_t ST7735_DrawStringRightAligned(uint16_t x, uint16_t y, char *pt, int16_t textColor);
 
 
 //********ST7735_SetCursor*****************
@@ -324,6 +334,9 @@ void ST7735_SetCursor(uint32_t newX, uint32_t newY);
 // Variable format 1-10 digits with no space before or after
 void ST7735_OutUDec(uint32_t n);
 
+//-----------------------ST7735_OutUDecRightAligned-----------------------
+void ST7735_OutUDecRightAligned(uint32_t n);
+
 //-----------------------ST7735_OutUDec2-----------------------
 // Output a 32-bit number in unsigned 2-digit decimal format
 // Position determined by ST7735_SetCursor command
@@ -332,6 +345,7 @@ void ST7735_OutUDec(uint32_t n);
 // Output: none
 // Fixed format 2 digits with no space before or after
 void ST7735_OutUDec2(uint32_t n);
+void ST7735_OutUDec2RightAligned(uint32_t n);
 
 //-----------------------ST7735_OutUDec4-----------------------
 // Output a 32-bit number in unsigned 4-digit decimal format
@@ -529,6 +543,13 @@ void Output_On(void);
 void Output_Color(uint32_t newColor);
 
 
+/****************ST7735_OutSDec16***************
+ Inputs:  signed 16-bit integer
+ Outputs: none
+ */ 
+void ST7735_OutSDec16(int16_t n);
+
+
 /****************ST7735_sDecOut2***************
  converts fixed point number to LCD
  format signed 32-bit with resolution 0.01
@@ -619,5 +640,7 @@ void ST7735_Line(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2,
 // Outputs: none
 void ST7735_SetX(int32_t newX);
 
-
+void ST7735_OutCharRightAligned(char ch);
+void ST7735_OutChar3D(char ch);
+void ST7735_OutStringRightAligned(char *ptr);
 #endif

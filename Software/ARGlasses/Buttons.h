@@ -1,10 +1,10 @@
 // filename ******** Buttons.h ************** 
-// Lisong Sun and Kerry Tu
-// Created: September 16, 2021
-// Header file for button functions
-// Lab 4
-// TA: Hassan Iqbal
-// Last edited: September 20, 2021
+// Lisong Sun, Kerry Tu, Dakota Britton, Casey Kim
+// Created: October 26, 2021
+// H file with button and flashlight functions.
+// Lab 11
+// TA: Matthew Yu
+// Last edited: November 25, 2021
 
 #ifndef BUTTONS_H
 #define BUTTONS_H
@@ -15,14 +15,7 @@
 #define PF0       (*((volatile uint32_t *)0x40025004))
 #define PF2       (*((volatile uint32_t *)0x40025010))
 #define PF4       (*((volatile uint32_t *)0x40025040))
-#define PC4       (*((volatile uint32_t *)0x40006040))
-#define PC5       (*((volatile uint32_t *)0x40006080))
-#define PC6       (*((volatile uint32_t *)0x40006100))
-#define PC7       (*((volatile uint32_t *)0x40006200))
 
-extern volatile uint8_t menuPress_flag; // semaphore for button inputs
-extern volatile uint8_t directionalPress_flag;
-extern volatile uint8_t backPress_flag;
 extern volatile uint8_t press_flag;
 
 
@@ -33,12 +26,8 @@ void Buttons_Init(void);
 // Initialize PortF
 // PF0, PF4 are inputs. PF2 is heartbeat output
 // PF0 BACK, PF4 MODE
-void PortF_Init(void);
-
-// Initialize PortC
-// PC4,PC5,PC6,PC7 are inputs
-// PC4 up, PC5 right, PC6 left, PC7 down
 void PortC_Init(void);
+
 
 // Enable Timer2 for one-shot debouncing
 void Debounce_Init(void);
@@ -50,9 +39,6 @@ void Buttons_Disable(void);
 void Buttons_Enable(void);
 
 // MODE/BACK input ISR
-void GPIOPortF_Handler(void);
-
-// Directional input ISR
 void GPIOPortC_Handler(void);
 
 #endif

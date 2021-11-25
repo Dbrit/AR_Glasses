@@ -1,3 +1,11 @@
+// filename ******** DHT11.h ************** 
+// Lisong Sun, Kerry Tu, Dakota Britton, Casey Kim
+// Created: October 26, 2021
+// H file with functions to communicate with the DHT11 temperature sensor.
+// Lab 11
+// TA: Matthew Yu
+// Last edited: November 25, 2021
+
 #ifndef DHT11_H
 #define DHT11_H
 
@@ -23,5 +31,10 @@ void DHT11_Init(void);
 // read temperature and humidity into globals
 void DHT11_Read(void);
 
+// return temp
+uint32_t DHT11_GetTemp(void);
+
+// return humidity
+uint32_t DHT11_GetHumidity(void);
 
 #endif
