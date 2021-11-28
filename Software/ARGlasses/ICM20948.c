@@ -282,11 +282,16 @@ void getMagnetometerData() {
 }
 
 uint32_t ICM20948_GetDirection() {
-	double X, Y;
+	double X, Y, Z, Xo, Yo, Zo, Xc, Yc;
 	getMagnetometerData();
 	X = (double) magData[0] * AK09916_MAG_LSB;
 	Y = (double) magData[1] * AK09916_MAG_LSB;
-	double angle = ((180*atan2(Y, X))/3.14)+180;
+	Xo = X - 15.149748;
+	Yo = Y - 37.309036;
+	Zo = Z - -17.643598;
+	Xc = 0.967531 * Xo + -0.074893 * Yo + -0.038452 * Zo;
+	Yc = -0.074893 * Xo + 0.965406 * Yo + -0.070214 * Zo;
+	double angle = ((180*atan2(Yc, Xc))/3.14)+180;
 	return (uint32_t)(angle+360) % 360;
 }
 

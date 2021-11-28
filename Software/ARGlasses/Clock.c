@@ -235,8 +235,11 @@ void Clock_UpdateWeatherMenu(void){
 	} else if (strncmp(weather, "Thunderstorm", 5) == 0) {
 		ST7735_DrawBitmap(100,85,thunderBMP,25,25);
 	} else {
-		ST7735_DrawBitmap(100,85,sunnyBMP,25,25);
+		ST7735_DrawBitmap(100,85,cloudyBMP,25,25);
 	}
+	
+	ST7735_SetCursor(6, 5);
+	ST7735_OutString(weather);
 	
 	ST7735_SetCursor(12, 6);
 	ST7735_OutString(temp);
@@ -267,7 +270,7 @@ void Clock_UpdateCompassMenu(void){
 	
 	uint32_t lowerBound = (currentDirection * COMPASS_SIZE) / 360;
 	
-	uint32_t i = lowerBound - 7;
+	uint32_t i = ((lowerBound+COMPASS_SIZE) - 7)%COMPASS_SIZE;
 	for(uint8_t offset = 0; offset < 15; offset++){
 		ST7735_SetCursor(offset+3, 2);
 		ST7735_OutChar3D(label[i]);

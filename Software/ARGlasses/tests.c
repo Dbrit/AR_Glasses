@@ -134,13 +134,13 @@ extern int16_t magData[3];
 // test magnetometer
 void Test_ICM20948(void) {
 	ST7735_FillScreen(ST7735_BLACK);
-	while (1) {
-		double X, Y, Z;
-		X = (double) magData[0] * AK09916_MAG_LSB;
-		Y = (double) magData[1] * AK09916_MAG_LSB;
-		Z = (double) magData[2] * AK09916_MAG_LSB;
-		getMagnetometerData();
-		
+	
+	for (int i = 0; i < 400; i++) { // draw a circle
+		double theta = 2*3.14*i/400;
+		ST7735_DrawPixel(COMP_X+(int)50*sin(theta),COMP_Y-(int)50*cos(theta),ST7735_CYAN);
+	} 
+	
+	while (1) {		
 		int32_t heading = ICM20948_GetDirection();
 		ST7735_SetCursor(0,0);
 		ST7735_OutString("Angle: ");
@@ -148,15 +148,12 @@ void Test_ICM20948(void) {
 		ST7735_OutString("      ");
 		
 		static double Ctheta;
-			for (int i = 0; i < 400; i++) { // draw a circle
-				double theta = 2*3.14*i/400;
-				ST7735_DrawPixel(COMP_X+(int)50*sin(theta),COMP_Y-(int)50*cos(theta),ST7735_CYAN);
-			} 
-			//erase
-			ST7735_Line(COMP_X, COMP_Y, COMP_X+(int)35*sin(Ctheta), COMP_Y-(int)35*cos(Ctheta), ST7735_BLACK); // minute hand
-			Ctheta = atan2(Y, X)+3.14;
-			//draw
-			ST7735_Line(COMP_X, COMP_Y, COMP_X+(int)35*sin(Ctheta), COMP_Y-(int)35*cos(Ctheta), ST7735_WHITE); // minute hand
+			
+		//erase
+		ST7735_Line(COMP_X, COMP_Y, COMP_X+(int)35*sin(Ctheta), COMP_Y-(int)35*cos(Ctheta), ST7735_BLACK); // minute hand
+		Ctheta = (heading-180)*3.14/180+3.14;
+		//draw
+		ST7735_Line(COMP_X, COMP_Y, COMP_X+(int)35*sin(Ctheta), COMP_Y-(int)35*cos(Ctheta), ST7735_WHITE); // minute hand
 	}
 	
 }
