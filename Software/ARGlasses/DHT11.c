@@ -39,7 +39,7 @@ void DHT11_Init(void) {
 // return temp
 uint32_t DHT11_GetTemp(void) {
 	DHT11_Read();
-	return ((temperature*9)/5) + 32;
+	return ((temperature*9)/5) + 3200;
 }
 
 // return humidity
